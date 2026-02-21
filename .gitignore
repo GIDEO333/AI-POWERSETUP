@@ -1,0 +1,21 @@
+# Python
+__pycache__/
+*.pyc
+*.pyo
+venv/
+.venv/
+
+# Environment
+# NOTE: .env is committed with placeholder values ("enter_your_apikey_here")
+# After cloning, replace placeholders with your real keys
+
+# Generated at bootstrap time
+agent/skills/skills-index.json
+
+# OS
+.DS_Store
+Thumbs.db
+
+# IDE
+.idea/
+.vscode/
