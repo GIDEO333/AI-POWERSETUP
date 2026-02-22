@@ -85,7 +85,15 @@ def llm_call(messages, max_tokens=2048, use_flash=False, retries=2):
                 extra_headers={"Accept-Language": "en-US,en"},
                 timeout=TIMEOUT,
             )
-            return response.choices[0].message.content or ""
+            msg = response.choices[0].message
+            # GLM-4.7-Flash puts answers in reasoning_content, not content
+            text = msg.content or ""
+            if not text and hasattr(msg, "reasoning_content") and msg.reasoning_content:
+                text = msg.reasoning_content
+            # Also check model_extra for reasoning_content (litellm compat)
+            if not text and hasattr(msg, "model_extra"):
+                text = (msg.model_extra or {}).get("reasoning_content", "")
+            return text or ""
         except Exception as e:
             estr = str(e).lower()
             # Retry on rate limit (z.ai error 1302)
