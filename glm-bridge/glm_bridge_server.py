@@ -1,29 +1,42 @@
 #!/usr/bin/env python3
-"""FORGE — GLM Bridge MCP Server v1.1.0.
+"""FORGE — GLM Bridge MCP Server v2.0.0.
 
-Single-shot LLM proxy for Cipher. Uses LiteLLM to call z.ai GLM-4.7
-via OpenAI-compatible API for code analysis and debugging.
+LLM proxy with Self-Refine capability. Uses GLM-4.7 (premium) for generation
+and GLM-4.7-Flash (free) for self-critique, reducing hallucinations without
+burning quota.
 
 Transport: stdio (JSON-RPC 2.0)
-Backend: LiteLLM → z.ai Coding Plan
+Backend: LiteLLM → z.ai
 
-NOTE: This is a pass-through bridge to GLM-4.7, NOT a recursive reasoning engine.
-For true Recursive Language Model (RLM), see future implementation.
-
-v1.1.0: Added argument validation, timeout guard, specific exception handling.
+v2.0.0: Self-Refine — generate (premium) → critique (flash/free) → refine
+v1.1.0: Added argument validation, timeout guard, specific exception handling
 """
 
 import json
 import os
 import sys
+import logging
 
-# Config from environment (set by cipher.yml)
+# Suppress LiteLLM noise
+logging.getLogger("LiteLLM").setLevel(logging.WARNING)
+
+# ── Config ───────────────────────────────────────────────────
+# Premium model (uses coding plan quota)
 API_KEY = os.environ.get("OPENAI_API_KEY", "")
 API_BASE = os.environ.get("OPENAI_API_BASE", "https://api.z.ai/api/coding/paas/v4")
 MODEL = os.environ.get("GLM_BRIDGE_MODEL", "openai/glm-4.7")
-TIMEOUT = int(os.environ.get("GLM_BRIDGE_TIMEOUT", "15"))
 
-# ── Argument validation schema ───────────────────────────────
+# Flash model (free tier — separate key, PAAS endpoint)
+FLASH_API_KEY = os.environ.get("GLM_FLASH_API_KEY", "")
+FLASH_API_BASE = os.environ.get("GLM_FLASH_API_BASE", "https://api.z.ai/api/paas/v4")
+FLASH_MODEL = os.environ.get("GLM_FLASH_MODEL", "glm-4.7-flash")
+
+# Self-Refine settings
+SELF_REFINE = os.environ.get("GLM_BRIDGE_SELF_REFINE", "true").lower() == "true"
+MAX_REFINE = int(os.environ.get("GLM_BRIDGE_MAX_REFINE", "1"))  # max critique rounds
+TIMEOUT = int(os.environ.get("GLM_BRIDGE_TIMEOUT", "30"))
+
+# ── Argument validation ─────────────────────────────────────
 REQUIRED_ARGS = {
     "reason": ["problem"],
     "verify": ["code"],
@@ -39,38 +52,78 @@ def validate_args(tool_name, args):
         val = args.get(field, "")
         if not str(val).strip():
             return f"Argumen '{field}' wajib diisi dan tidak boleh kosong."
-    return None  # valid
+    return None
 
 
-def llm_call(messages, max_tokens=2048):
-    """Call LLM via LiteLLM (supports OpenAI-compatible endpoints)."""
+# ── LLM Calls ────────────────────────────────────────────────
+
+def llm_call(messages, max_tokens=2048, use_flash=False):
+    """Call LLM via LiteLLM. use_flash=True routes to free Flash model."""
     import litellm
-    litellm.api_key = API_KEY
-    litellm.api_base = API_BASE
+
+    if use_flash and FLASH_API_KEY:
+        key = FLASH_API_KEY
+        base = FLASH_API_BASE
+        model = FLASH_MODEL
+    else:
+        key = API_KEY
+        base = API_BASE
+        model = MODEL
 
     try:
         response = litellm.completion(
-            model=MODEL,
+            model=model,
             messages=messages,
             max_tokens=max_tokens,
-            api_key=API_KEY,
-            api_base=API_BASE,
+            api_key=key,
+            api_base=base,
             extra_headers={"Accept-Language": "en-US,en"},
             timeout=TIMEOUT,
         )
-        return response.choices[0].message.content
-    except litellm.Timeout:
-        return f"[GLM Bridge] Request timeout (>{TIMEOUT}s). Coba lagi atau periksa koneksi."
-    except litellm.AuthenticationError:
-        return "[GLM Bridge] API key tidak valid atau kuota habis."
+        return response.choices[0].message.content or ""
     except Exception as e:
-        return f"[GLM Bridge Error] {type(e).__name__}: {str(e)[:200]}"
+        etype = type(e).__name__
+        return f"[GLM Bridge Error] {etype}: {str(e)[:200]}"
 
+
+def flash_critique(original_problem, draft_answer):
+    """Send draft to Flash (free) for critique. Returns critique or None."""
+    if not FLASH_API_KEY:
+        return None  # Flash not configured, skip refinement
+
+    critique_prompt = f"""Review this AI-generated answer for a coding problem.
+
+PROBLEM:
+{original_problem[:2000]}
+
+DRAFT ANSWER:
+{draft_answer[:4000]}
+
+Your task: Identify ONLY genuine errors, bugs, or missing critical steps.
+If the answer is already good, respond with exactly: LGTM
+If there are real issues, list them as bullet points (max 3).
+Be concise. Do NOT rewrite the solution."""
+
+    messages = [
+        {"role": "system", "content": "You are a code reviewer. Be concise and precise. Only flag real issues."},
+        {"role": "user", "content": critique_prompt}
+    ]
+
+    try:
+        result = llm_call(messages, max_tokens=512, use_flash=True)
+        if not result or "[GLM Bridge Error]" in result:
+            return None
+        return result
+    except Exception:
+        return None  # Flash failed, proceed without refinement
+
+
+# ── Tool Functions ───────────────────────────────────────────
 
 def reason(problem):
-    """Send a complex problem to GLM-4.7 for deep analysis (single-shot)."""
+    """Deep analysis with optional Self-Refine via Flash critique."""
     system_prompt = """Anda adalah Reasoning Engine untuk coding agent.
-Tugas Anda: Analisis masalah secara SISTEMATIS menggunakan langkah-langkah berikut:
+Tugas Anda: Analisis masalah secara SISTEMATIS:
 1. Pahami masalah — apa yang diminta?
 2. Identifikasi komponen yang terlibat
 3. Analisis kemungkinan penyebab (jika debugging)
@@ -96,14 +149,45 @@ Format output:
     ]
 
     try:
-        result = llm_call(messages, max_tokens=2048)
-        return result
+        # Step 1: Generate (premium, 1 quota)
+        draft = llm_call(messages, max_tokens=2048)
+
+        if not SELF_REFINE or not FLASH_API_KEY:
+            return draft  # No refinement, return as-is
+
+        # Step 2: Critique via Flash (free, 0 quota)
+        for i in range(MAX_REFINE):
+            critique = flash_critique(problem, draft)
+
+            if critique is None or "LGTM" in critique.upper():
+                break  # Flash says it's good, or Flash unavailable
+
+            # Step 3: Refine (premium, 1 more quota — only if real issues found)
+            refine_prompt = f"""Your previous answer had these issues identified by a reviewer:
+
+{critique}
+
+Original problem: {problem[:1000]}
+
+Your previous answer:
+{draft[:3000]}
+
+Please provide a CORRECTED and IMPROVED answer. Keep the same format."""
+
+            messages_refine = [
+                {"role": "system", "content": system_prompt},
+                {"role": "user", "content": refine_prompt}
+            ]
+            draft = llm_call(messages_refine, max_tokens=2048)
+
+        return draft
+
     except Exception as e:
         return f"GLM Bridge Error: {str(e)}"
 
 
 def verify(code, context=""):
-    """Verify code for correctness, security, and best practices (single-shot)."""
+    """Verify code with optional Flash double-check."""
     system_prompt = """Anda adalah Code Verifier. Review kode berikut dan berikan:
 1. ✅ Apa yang sudah benar
 2. ⚠️ Potensi masalah (bug, security, performance)
@@ -117,18 +201,30 @@ Format output dalam markdown."""
 
     try:
         result = llm_call(messages, max_tokens=1024)
+
+        # Optional: Flash second opinion (free)
+        if SELF_REFINE and FLASH_API_KEY:
+            critique = flash_critique(
+                f"Verify this code: {context}",
+                result
+            )
+            if critique and "LGTM" not in critique.upper():
+                result += f"\n\n---\n### 🔍 Second Opinion (Flash)\n{critique}"
+
         return result
     except Exception as e:
         return f"GLM Bridge Verify Error: {str(e)}"
 
 
+# ── MCP Server ───────────────────────────────────────────────
+
 class GLMBridgeServer:
-    """MCP Server for GLM Bridge — communicates via stdin/stdout JSON-RPC 2.0."""
+    """MCP Server for GLM Bridge v2 — Self-Refine enabled."""
 
     TOOLS = [
         {
             "name": "reason",
-            "description": "Kirim masalah coding kompleks ke GLM-4.7 untuk analisis mendalam. Gunakan untuk debugging sulit atau review arsitektur.",
+            "description": "Analisis mendalam masalah coding via GLM-4.7 dengan Self-Refine. Generate → Flash critique (free) → Refine jika ada issue.",
             "inputSchema": {
                 "type": "object",
                 "properties": {
@@ -142,7 +238,7 @@ class GLMBridgeServer:
         },
         {
             "name": "verify",
-            "description": "Kirim kode ke GLM-4.7 untuk verifikasi correctness, security, dan best practices.",
+            "description": "Verifikasi kode untuk correctness, security, dan best practices. Termasuk Flash second opinion.",
             "inputSchema": {
                 "type": "object",
                 "properties": {
@@ -166,10 +262,14 @@ class GLMBridgeServer:
         rid = req.get("id")
 
         if method == "initialize":
+            refine_status = "enabled" if (SELF_REFINE and FLASH_API_KEY) else "disabled"
             return {"jsonrpc": "2.0", "id": rid, "result": {
                 "protocolVersion": "2024-11-05",
                 "capabilities": {"tools": {}},
-                "serverInfo": {"name": "glm-bridge", "version": "1.1.0"}
+                "serverInfo": {
+                    "name": "glm-bridge",
+                    "version": "2.0.0",
+                }
             }}
         elif method == "notifications/initialized":
             return None
@@ -180,7 +280,6 @@ class GLMBridgeServer:
             tool_name = params.get("name", "")
             args = params.get("arguments", {})
 
-            # Validate arguments before calling LLM
             error_msg = validate_args(tool_name, args)
             if error_msg:
                 return {"jsonrpc": "2.0", "id": rid, "result": {
@@ -205,6 +304,11 @@ class GLMBridgeServer:
         }}
 
     def run(self):
+        # Log startup info to stderr (not stdout, which is for JSON-RPC)
+        mode = "Self-Refine ON" if (SELF_REFINE and FLASH_API_KEY) else "Single-shot"
+        sys.stderr.write(f"[GLM Bridge v2.0] Mode: {mode} | Model: {MODEL}\n")
+        sys.stderr.flush()
+
         for line in sys.stdin:
             line = line.strip()
             if not line:
