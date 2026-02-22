@@ -1,15 +1,17 @@
 #!/usr/bin/env python3
-"""FORGE — GLM Bridge MCP Server v2.0.0.
+"""FORGE — GLM Bridge MCP Server v3.0.0.
 
-LLM proxy with Self-Refine capability. Uses GLM-4.7 (premium) for generation
-and GLM-4.7-Flash (free) for self-critique, reducing hallucinations without
-burning quota.
+LLM proxy with Self-Refine + True RLM capabilities.
+- reason(): Peek Gate + Self-Refine (premium + flash)
+- verify(): Code review with flash second opinion
+- deep_reason(): RLM-style pipeline — REPL exploration + Flash chunks + Premium synthesis
 
 Transport: stdio (JSON-RPC 2.0)
 Backend: LiteLLM → z.ai
 
-v2.0.0: Self-Refine — generate (premium) → critique (flash/free) → refine
-v1.1.0: Added argument validation, timeout guard, specific exception handling
+v3.0.0: True RLM — deep_reason (REPL + Flash sub-calls + Premium synthesis)
+v2.0.0: Self-Refine + Peek First Gate
+v1.1.0: Argument validation, timeout guard
 """
 
 import json
@@ -40,6 +42,7 @@ TIMEOUT = int(os.environ.get("GLM_BRIDGE_TIMEOUT", "30"))
 REQUIRED_ARGS = {
     "reason": ["problem"],
     "verify": ["code"],
+    "deep_reason": ["problem"],
 }
 
 
@@ -262,21 +265,165 @@ Format output dalam markdown."""
         return f"GLM Bridge Verify Error: {str(e)}"
 
 
+# ── Python Sandbox (inline, for RLM) ────────────────────────
+
+def run_python(code, timeout=10):
+    """Execute Python code in subprocess, return stdout+stderr."""
+    import subprocess
+    import tempfile
+
+    with tempfile.NamedTemporaryFile(mode='w', suffix='.py', delete=False) as f:
+        f.write(code)
+        tmp = f.name
+
+    try:
+        r = subprocess.run(
+            [sys.executable, tmp],
+            capture_output=True, text=True, timeout=timeout,
+            cwd=os.path.expanduser("~"),
+            env={"PATH": os.environ.get("PATH", ""), "HOME": os.environ.get("HOME", "")}
+        )
+        out = ""
+        if r.stdout:
+            out += r.stdout[:6000]
+        if r.stderr:
+            out += f"\nSTDERR: {r.stderr[:2000]}"
+        return out.strip() or "(no output)"
+    except subprocess.TimeoutExpired:
+        return f"[Timeout after {timeout}s]"
+    except Exception as e:
+        return f"[Error: {e}]"
+    finally:
+        try:
+            os.unlink(tmp)
+        except OSError:
+            pass
+
+
+# ── True RLM: deep_reason ────────────────────────────────────
+
+def deep_reason(problem, context=""):
+    """RLM-style reasoning: REPL exploration + Flash chunk processing + Premium synthesis.
+
+    Pipeline:
+      1. Premium writes Python to explore/filter the context (1 quota)
+      2. Subprocess executes the Python code (0 quota)
+      3. Flash processes extracted chunks (0 quota, free)
+      4. Premium synthesizes final answer from all findings (1 quota)
+
+    Total cost: 2 premium quota + unlimited free Flash calls
+    """
+    if not FLASH_API_KEY:
+        # Fallback to regular reason if Flash not available
+        return reason(problem)
+
+    # ── Phase 1: Strategy Generation (Premium, 1 quota) ──────
+    strategy_prompt = f"""You are an RLM (Recursive Language Model) Root controller.
+
+PROBLEM: {problem[:2000]}
+
+CONTEXT SIZE: {len(context)} characters (~{len(context)//4} tokens)
+
+Your job: Write a Python script that will explore and extract the most relevant 
+parts of the context. The context is available as variable `CONTEXT` in the script.
+
+Rules:
+- Print ONLY the relevant extracted portions (max 5000 chars output)
+- Use regex, string search, line filtering — NOT LLM calls
+- The script must be self-contained Python (no external deps)
+- Focus on what's needed to answer the problem
+- If context is small (<2000 chars), just print it all
+
+Output ONLY the Python code, nothing else. No markdown fences."""
+
+    if len(context) < 2000:
+        # Context is small enough — skip REPL, go straight to reasoning
+        combined = f"Problem: {problem}\n\nContext:\n{context}"
+        return reason(combined)
+
+    messages = [
+        {"role": "system", "content": "You write Python scripts to analyze data. Output only code."},
+        {"role": "user", "content": strategy_prompt}
+    ]
+
+    strategy_code = llm_call(messages, max_tokens=1024)
+
+    # Clean code (remove markdown fences if model added them)
+    strategy_code = strategy_code.strip()
+    if strategy_code.startswith("```"):
+        lines = strategy_code.split("\n")
+        strategy_code = "\n".join(lines[1:-1] if lines[-1].strip() == "```" else lines[1:])
+
+    # Inject the context as a variable
+    full_script = f'''CONTEXT = """{context[:50000]}"""\n\n{strategy_code}'''
+
+    # ── Phase 2: Execute Strategy (0 quota) ──────────────────
+    repl_output = run_python(full_script, timeout=10)
+
+    if "[Timeout" in repl_output or "[Error" in repl_output:
+        # Strategy failed — fallback: just truncate context and reason directly
+        combined = f"Problem: {problem}\n\nContext (truncated):\n{context[:4000]}"
+        return reason(combined)
+
+    # ── Phase 3: Flash Chunk Processing (FREE) ───────────────
+    # If REPL output is large, use Flash to summarize/extract key findings
+    if len(repl_output) > 3000:
+        chunk_prompt = f"""Extract the key findings relevant to this problem:
+
+PROBLEM: {problem[:500]}
+
+DATA:
+{repl_output[:6000]}
+
+List only the most important findings (max 5 bullet points)."""
+
+        chunk_messages = [
+            {"role": "system", "content": "Extract key findings concisely."},
+            {"role": "user", "content": chunk_prompt}
+        ]
+        findings = llm_call(chunk_messages, max_tokens=512, use_flash=True)
+    else:
+        findings = repl_output
+
+    # ── Phase 4: Synthesis (Premium, 1 quota) ────────────────
+    synthesis_prompt = f"""Based on the following analysis, provide a complete solution.
+
+ORIGINAL PROBLEM:
+{problem[:2000]}
+
+FINDINGS FROM DATA ANALYSIS:
+{findings[:4000]}
+
+Provide a comprehensive answer with:
+## Analisis
+## Root Cause / Komponen
+## Solusi
+## Kode (if applicable)"""
+
+    synthesis_messages = [
+        {"role": "system", "content": COMPLEX_PROMPT},
+        {"role": "user", "content": synthesis_prompt}
+    ]
+
+    result = llm_call(synthesis_messages, max_tokens=2048)
+    return result
+
+
 # ── MCP Server ───────────────────────────────────────────────
 
 class GLMBridgeServer:
-    """MCP Server for GLM Bridge v2 — Self-Refine enabled."""
+    """MCP Server for GLM Bridge v3 — Self-Refine + True RLM."""
 
     TOOLS = [
         {
             "name": "reason",
-            "description": "Analisis mendalam masalah coding via GLM-4.7 dengan Self-Refine. Generate → Flash critique (free) → Refine jika ada issue.",
+            "description": "Analisis masalah coding via GLM-4.7. Peek Gate → Self-Refine. Untuk pertanyaan umum dan debugging.",
             "inputSchema": {
                 "type": "object",
                 "properties": {
                     "problem": {
                         "type": "string",
-                        "description": "Deskripsi masalah yang perlu dianalisis secara mendalam"
+                        "description": "Deskripsi masalah yang perlu dianalisis"
                     }
                 },
                 "required": ["problem"]
@@ -284,7 +431,7 @@ class GLMBridgeServer:
         },
         {
             "name": "verify",
-            "description": "Verifikasi kode untuk correctness, security, dan best practices. Termasuk Flash second opinion.",
+            "description": "Verifikasi kode untuk correctness, security, dan best practices.",
             "inputSchema": {
                 "type": "object",
                 "properties": {
@@ -294,11 +441,30 @@ class GLMBridgeServer:
                     },
                     "context": {
                         "type": "string",
-                        "description": "Konteks tambahan (apa tujuan kode ini)",
+                        "description": "Konteks tambahan",
                         "default": ""
                     }
                 },
                 "required": ["code"]
+            }
+        },
+        {
+            "name": "deep_reason",
+            "description": "RLM-style deep analysis untuk masalah dengan konteks besar. Pipeline: Premium → REPL exploration → Flash chunk processing (free) → Premium synthesis. Gunakan saat ada codebase/log/dokumen besar yang perlu dianalisis.",
+            "inputSchema": {
+                "type": "object",
+                "properties": {
+                    "problem": {
+                        "type": "string",
+                        "description": "Masalah yang perlu dianalisis secara mendalam"
+                    },
+                    "context": {
+                        "type": "string",
+                        "description": "Konteks besar (codebase, log, dokumen) yang perlu dianalisis",
+                        "default": ""
+                    }
+                },
+                "required": ["problem"]
             }
         }
     ]
@@ -308,13 +474,12 @@ class GLMBridgeServer:
         rid = req.get("id")
 
         if method == "initialize":
-            refine_status = "enabled" if (SELF_REFINE and FLASH_API_KEY) else "disabled"
             return {"jsonrpc": "2.0", "id": rid, "result": {
                 "protocolVersion": "2024-11-05",
                 "capabilities": {"tools": {}},
                 "serverInfo": {
                     "name": "glm-bridge",
-                    "version": "2.0.0",
+                    "version": "3.0.0",
                 }
             }}
         elif method == "notifications/initialized":
@@ -336,6 +501,8 @@ class GLMBridgeServer:
                 result = reason(args.get("problem", ""))
             elif tool_name == "verify":
                 result = verify(args.get("code", ""), args.get("context", ""))
+            elif tool_name == "deep_reason":
+                result = deep_reason(args.get("problem", ""), args.get("context", ""))
             else:
                 return {"jsonrpc": "2.0", "id": rid, "error": {
                     "code": -32601, "message": f"Unknown tool: {tool_name}"
@@ -350,9 +517,8 @@ class GLMBridgeServer:
         }}
 
     def run(self):
-        # Log startup info to stderr (not stdout, which is for JSON-RPC)
-        mode = "Self-Refine ON" if (SELF_REFINE and FLASH_API_KEY) else "Single-shot"
-        sys.stderr.write(f"[GLM Bridge v2.0] Mode: {mode} | Model: {MODEL}\n")
+        mode = "RLM" if (SELF_REFINE and FLASH_API_KEY) else "Single-shot"
+        sys.stderr.write(f"[GLM Bridge v3.0] Mode: {mode} | Model: {MODEL}\n")
         sys.stderr.flush()
 
         for line in sys.stdin:
