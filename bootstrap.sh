@@ -128,18 +128,30 @@ ok "mcp_config.json generated at ~/.gemini/antigravity/"
 # ─── Step 5: Fix switchboard sub-MCP paths ──────────────────
 log "Step 5: Patching switchboard sub-MCP paths..."
 # Update GLM Bridge .mcp.json with correct absolute path
+FLASH_KEY="${ZAI_FLASH_API_KEY:-}"
 cat > "$REPO_DIR/switchboard/mcps/glm-bridge/.mcp.json" << GLMEOF
 {
   "name": "glm-bridge",
   "description": "glm-bridge MCP",
-  "switchboardDescription": "GLM Bridge — Self-Refine LLM proxy to z.ai GLM-4.7",
+  "switchboardDescription": "GLM Bridge — Self-Refine + True RLM proxy to z.ai GLM-4.7",
   "command": {
     "cmd": "$REPO_DIR/glm-bridge/venv/bin/python3 $REPO_DIR/glm-bridge/glm_bridge_server.py",
-    "args": []
+    "args": [],
+    "env": {
+      "OPENAI_API_KEY": "${ZAI_API_KEY:-}",
+      "OPENAI_API_BASE": "https://api.z.ai/api/coding/paas/v4",
+      "GLM_BRIDGE_MODEL": "openai/glm-4.7",
+      "GLM_BRIDGE_TIMEOUT": "90",
+      "GLM_FLASH_API_KEY": "$FLASH_KEY",
+      "GLM_FLASH_API_BASE": "https://api.z.ai/api/paas/v4",
+      "GLM_FLASH_MODEL": "glm-4.7-flash",
+      "GLM_BRIDGE_SELF_REFINE": "true",
+      "GLM_BRIDGE_MAX_REFINE": "1"
+    }
   }
 }
 GLMEOF
-ok "GLM Bridge sub-MCP path set"
+ok "GLM Bridge sub-MCP path set (+ env vars)"
 
 # Update Exa .mcp.json
 EXA_KEY="${EXA_API_KEY:-}"
