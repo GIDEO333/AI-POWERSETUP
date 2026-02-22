@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""FORGE — GLM Bridge MCP Server v3.1.0.
+"""FORGE — GLM Bridge MCP Server v3.2.0.
 
 LLM proxy with Self-Refine capability.
 - reason(): Deep analysis + Flash Self-Refine (premium + flash)
@@ -8,6 +8,7 @@ LLM proxy with Self-Refine capability.
 Transport: stdio (JSON-RPC 2.0)
 Backend: LiteLLM → z.ai
 
+v3.2.0: Anti-hang fixes (num_retries=0, signal handler, fail-fast)
 v3.1.0: Cleanup — removed dead code (Peek Gate, deep_reason)
 v3.0.0: True RLM (removed — redundant with Gemini 1M context)
 v2.0.0: Self-Refine + Peek First Gate (removed — Flash over-thinks)
@@ -17,10 +18,21 @@ v1.1.0: Argument validation, timeout guard
 import json
 import os
 import sys
+import signal
 import logging
 
 # Suppress LiteLLM noise
 logging.getLogger("LiteLLM").setLevel(logging.WARNING)
+
+# ── Graceful Shutdown ────────────────────────────────────────
+# Prevents zombie processes when SIGTERM/SIGINT is sent
+def _shutdown(signum, _frame):
+    """Clean exit on signal — prevents zombie processes."""
+    sys.stderr.write(f"[GLM Bridge] Shutdown signal={signum}\n")
+    sys.exit(0)
+
+signal.signal(signal.SIGTERM, _shutdown)
+signal.signal(signal.SIGINT, _shutdown)
 
 # ── Config ───────────────────────────────────────────────────
 # Premium model (uses coding plan quota)
@@ -83,6 +95,7 @@ def llm_call(messages, max_tokens=2048, use_flash=False, retries=2):
                 api_base=base,
                 extra_headers={"Accept-Language": "en-US,en"},
                 timeout=TIMEOUT,
+                num_retries=0,  # CRITICAL: disable LiteLLM internal retries (causes infinite hang)
             )
             msg = response.choices[0].message
             # GLM-4.7-Flash puts answers in reasoning_content, not content
@@ -286,7 +299,7 @@ class GLMBridgeServer:
                 "capabilities": {"tools": {}},
                 "serverInfo": {
                     "name": "glm-bridge",
-                    "version": "3.1.0",
+                    "version": "3.2.0",
                 }
             }}
         elif method == "notifications/initialized":
