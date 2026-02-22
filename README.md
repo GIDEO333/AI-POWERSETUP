@@ -8,7 +8,7 @@ Deterministic bootstrap for an agentic AI coding stack with **Self-Refine** via 
 git clone https://github.com/GIDEO333/AI-POWERSETUP.git
 cd AI-POWERSETUP
 cp .env.example .env    # Fill in API keys
-bash bootstrap.sh       # 10/10 checks = ready
+bash bootstrap.sh       # 9/9 checks = ready
 ```
 
 ## Architecture
@@ -55,7 +55,7 @@ Request → GLM-4.7 generates answer (1 quota)
 
 ```bash
 bash verify.sh
-# Expected: 10/10 checks passed 🪨
+# Expected: 9/9 checks passed 🪨
 ```
 
 ## Resilience

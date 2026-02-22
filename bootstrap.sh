@@ -74,15 +74,6 @@ fi
 ln -sf "$REPO_DIR/agent/skills" ~/.agent/skills
 ok "~/.agent/skills → repo"
 
-# ~/.openclaw → repo/openclaw
-if [ -L ~/.openclaw ]; then rm ~/.openclaw; fi
-if [ -d ~/.openclaw ] && [ ! -L ~/.openclaw ]; then
-    mv ~/.openclaw ~/.openclaw.bak.$(date +%s)
-    warn "Backed up existing ~/.openclaw/"
-fi
-ln -sf "$REPO_DIR/openclaw" ~/.openclaw
-ok "~/.openclaw → repo"
-
 # ~/.switchboard → repo/switchboard
 if [ -L ~/.switchboard ]; then rm ~/.switchboard; fi
 if [ -d ~/.switchboard ] && [ ! -L ~/.switchboard ]; then
