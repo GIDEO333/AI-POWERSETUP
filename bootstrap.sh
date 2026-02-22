@@ -127,19 +127,19 @@ ok "mcp_config.json generated at ~/.gemini/antigravity/"
 
 # ─── Step 5: Fix switchboard sub-MCP paths ──────────────────
 log "Step 5: Patching switchboard sub-MCP paths..."
-# Update RLM .mcp.json with correct absolute path
-cat > "$REPO_DIR/switchboard/mcps/rlm/.mcp.json" << RLMEOF
+# Update GLM Bridge .mcp.json with correct absolute path
+cat > "$REPO_DIR/switchboard/mcps/glm-bridge/.mcp.json" << GLMEOF
 {
-  "name": "rlm",
-  "description": "rlm MCP",
-  "switchboardDescription": "Reasoning Layer Module",
+  "name": "glm-bridge",
+  "description": "glm-bridge MCP",
+  "switchboardDescription": "GLM Bridge — Single-shot LLM proxy to z.ai GLM-4.7",
   "command": {
-    "cmd": "$REPO_DIR/rlm-workspace/venv/bin/python3 $REPO_DIR/rlm-workspace/rlm_mcp_server.py",
+    "cmd": "$REPO_DIR/glm-bridge/venv/bin/python3 $REPO_DIR/glm-bridge/glm_bridge_server.py",
     "args": []
   }
 }
-RLMEOF
-ok "RLM sub-MCP path set"
+GLMEOF
+ok "GLM Bridge sub-MCP path set"
 
 # Update Exa .mcp.json
 EXA_KEY="${EXA_API_KEY:-}"
@@ -160,8 +160,8 @@ EXAEOF
 ok "Exa sub-MCP configured"
 
 # ─── Step 6: Python virtual environment ─────────────────────
-log "Step 6: Setting up Python venv for RLM..."
-cd "$REPO_DIR/rlm-workspace"
+log "Step 6: Setting up Python venv for GLM Bridge..."
+cd "$REPO_DIR/glm-bridge"
 
 if [ ! -d "venv" ]; then
     python3 -m venv venv

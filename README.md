@@ -19,7 +19,7 @@ bash bootstrap.sh
 3. ✅ Symlinks `openclaw` → `~/.openclaw`
 4. ✅ Symlinks `switchboard` → `~/.switchboard`
 5. ✅ Generates `~/.gemini/antigravity/mcp_config.json` (absolute paths)
-6. ✅ Creates Python venv + installs RLM dependencies
+6. ✅ Creates Python venv + installs GLM Bridge dependencies
 7. ✅ Builds semantic skills index (Jina AI or local fallback)
 8. ✅ Runs 11-point verification audit
 
@@ -30,7 +30,7 @@ Antigravity IDE (Gemini)
     ├── skills-search (MCP) ──→ Jina AI semantic RAG
     ├── sequential-thinking (MCP)
     └── switchboard (MCP) ──→ Aggregator Hub
-        ├── rlm ──→ GLM-4.7 via z.ai (reason + verify)
+        ├── glm-bridge ──→ GLM-4.7 via z.ai (reason + verify)
         └── exa ──→ Web search (internet awareness)
 ```
 
@@ -40,7 +40,7 @@ Antigravity IDE (Gemini)
 |-----------|------|---------|
 | Skills Search | `agent/scripts/skills-search-server.py` | Semantic skill matching (11 skills) |
 | Embedding Provider | `agent/scripts/embedding_provider.py` | Jina AI + local fallback |
-| RLM Server | `rlm-workspace/rlm_mcp_server.py` | Reasoning Layer Module |
+| GLM Bridge | `glm-bridge/glm_bridge_server.py` | Single-shot LLM proxy to z.ai GLM-4.7 |
 | Cipher Config | `openclaw/cipher/cipher.yml` | LLM orchestration config |
 | 11 Skills | `agent/skills/skills/*/SKILL.md` | Agent SOP library |
 

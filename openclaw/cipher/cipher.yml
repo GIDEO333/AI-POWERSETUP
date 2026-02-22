@@ -1,17 +1,16 @@
 # FORGE Stack — Cipher Configuration (Template)
 # API keys are loaded from environment variables set in .env
 mcpServers:
-  rlm:
+  glm-bridge:
     type: stdio
-    command: $HOME/Projects/AI-POWERSETUP/rlm-workspace/venv/bin/python3
+    command: $HOME/Projects/AI-POWERSETUP/glm-bridge/venv/bin/python3
     args:
-      - $HOME/Projects/AI-POWERSETUP/rlm-workspace/rlm_mcp_server.py
+      - $HOME/Projects/AI-POWERSETUP/glm-bridge/glm_bridge_server.py
     env:
       OPENAI_API_KEY: $ZAI_API_KEY
       OPENAI_API_BASE: https://api.z.ai/api/coding/paas/v4
-      RLM_BACKEND: litellm
-      RLM_MODEL: openai/glm-4.7
-      RLM_MAX_ITERATIONS: "10"
+      GLM_BRIDGE_MODEL: openai/glm-4.7
+      GLM_BRIDGE_TIMEOUT: "15"
 
 llm:
   provider: openai

@@ -6,7 +6,7 @@
     "cmd": "npx -y exa-mcp-server",
     "args": [],
     "env": {
-      "EXA_API_KEY": ""
+      "EXA_API_KEY": "enter_your_apikey_here"
     }
   }
 }

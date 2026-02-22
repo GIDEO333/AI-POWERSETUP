@@ -1,11 +1,14 @@
 #!/usr/bin/env python3
-"""FORGE — RLM (Reasoning Layer Module) MCP Server v1.1.0.
+"""FORGE — GLM Bridge MCP Server v1.1.0.
 
-Multi-step reasoning engine for Cipher. Uses LiteLLM to call z.ai GLM-4.7
-via OpenAI-compatible API for deep code analysis and complex debugging.
+Single-shot LLM proxy for Cipher. Uses LiteLLM to call z.ai GLM-4.7
+via OpenAI-compatible API for code analysis and debugging.
 
 Transport: stdio (JSON-RPC 2.0)
 Backend: LiteLLM → z.ai Coding Plan
+
+NOTE: This is a pass-through bridge to GLM-4.7, NOT a recursive reasoning engine.
+For true Recursive Language Model (RLM), see future implementation.
 
 v1.1.0: Added argument validation, timeout guard, specific exception handling.
 """
@@ -17,8 +20,8 @@ import sys
 # Config from environment (set by cipher.yml)
 API_KEY = os.environ.get("OPENAI_API_KEY", "")
 API_BASE = os.environ.get("OPENAI_API_BASE", "https://api.z.ai/api/coding/paas/v4")
-MODEL = os.environ.get("RLM_MODEL", "openai/glm-4.7")
-MAX_ITERATIONS = int(os.environ.get("RLM_MAX_ITERATIONS", "10"))
+MODEL = os.environ.get("GLM_BRIDGE_MODEL", "openai/glm-4.7")
+TIMEOUT = int(os.environ.get("GLM_BRIDGE_TIMEOUT", "15"))
 
 # ── Argument validation schema ───────────────────────────────
 REQUIRED_ARGS = {
@@ -53,21 +56,19 @@ def llm_call(messages, max_tokens=2048):
             api_key=API_KEY,
             api_base=API_BASE,
             extra_headers={"Accept-Language": "en-US,en"},
-            timeout=15,
+            timeout=TIMEOUT,
         )
         return response.choices[0].message.content
     except litellm.Timeout:
-        return "[RLM] Request timeout (>15s). Coba lagi atau periksa koneksi."
+        return f"[GLM Bridge] Request timeout (>{TIMEOUT}s). Coba lagi atau periksa koneksi."
     except litellm.AuthenticationError:
-        return "[RLM] API key tidak valid atau kuota habis."
+        return "[GLM Bridge] API key tidak valid atau kuota habis."
     except Exception as e:
-        return f"[RLM Error] {type(e).__name__}: {str(e)[:200]}"
+        return f"[GLM Bridge Error] {type(e).__name__}: {str(e)[:200]}"
 
 
-def reason(problem, max_steps=None):
-    """Multi-step reasoning: break down a complex problem into steps."""
-    steps = max_steps or MAX_ITERATIONS
-    
+def reason(problem):
+    """Send a complex problem to GLM-4.7 for deep analysis (single-shot)."""
     system_prompt = """Anda adalah Reasoning Engine untuk coding agent.
 Tugas Anda: Analisis masalah secara SISTEMATIS menggunakan langkah-langkah berikut:
 1. Pahami masalah — apa yang diminta?
@@ -98,11 +99,11 @@ Format output:
         result = llm_call(messages, max_tokens=2048)
         return result
     except Exception as e:
-        return f"RLM Error: {str(e)}"
+        return f"GLM Bridge Error: {str(e)}"
 
 
 def verify(code, context=""):
-    """Verify code for correctness, security, and best practices."""
+    """Verify code for correctness, security, and best practices (single-shot)."""
     system_prompt = """Anda adalah Code Verifier. Review kode berikut dan berikan:
 1. ✅ Apa yang sudah benar
 2. ⚠️ Potensi masalah (bug, security, performance)
@@ -118,27 +119,22 @@ Format output dalam markdown."""
         result = llm_call(messages, max_tokens=1024)
         return result
     except Exception as e:
-        return f"RLM Verify Error: {str(e)}"
+        return f"GLM Bridge Verify Error: {str(e)}"
 
 
-class RLMServer:
-    """MCP Server for RLM — communicates via stdin/stdout JSON-RPC 2.0."""
+class GLMBridgeServer:
+    """MCP Server for GLM Bridge — communicates via stdin/stdout JSON-RPC 2.0."""
 
     TOOLS = [
         {
             "name": "reason",
-            "description": "Melakukan reasoning mendalam terhadap masalah coding kompleks. Gunakan untuk analisis bug sulit, debugging multi-step, atau review arsitektur.",
+            "description": "Kirim masalah coding kompleks ke GLM-4.7 untuk analisis mendalam. Gunakan untuk debugging sulit atau review arsitektur.",
             "inputSchema": {
                 "type": "object",
                 "properties": {
                     "problem": {
                         "type": "string",
                         "description": "Deskripsi masalah yang perlu dianalisis secara mendalam"
-                    },
-                    "max_steps": {
-                        "type": "integer",
-                        "description": "Maksimal iterasi reasoning (default: 10)",
-                        "default": 10
                     }
                 },
                 "required": ["problem"]
@@ -146,7 +142,7 @@ class RLMServer:
         },
         {
             "name": "verify",
-            "description": "Verifikasi kode untuk correctness, security, dan best practices. Gunakan setelah implementasi untuk memastikan kualitas.",
+            "description": "Kirim kode ke GLM-4.7 untuk verifikasi correctness, security, dan best practices.",
             "inputSchema": {
                 "type": "object",
                 "properties": {
@@ -173,7 +169,7 @@ class RLMServer:
             return {"jsonrpc": "2.0", "id": rid, "result": {
                 "protocolVersion": "2024-11-05",
                 "capabilities": {"tools": {}},
-                "serverInfo": {"name": "rlm-mcp-server", "version": "1.0.0"}
+                "serverInfo": {"name": "glm-bridge", "version": "1.1.0"}
             }}
         elif method == "notifications/initialized":
             return None
@@ -188,11 +184,11 @@ class RLMServer:
             error_msg = validate_args(tool_name, args)
             if error_msg:
                 return {"jsonrpc": "2.0", "id": rid, "result": {
-                    "content": [{"type": "text", "text": f"[RLM Validation] {error_msg}"}]
+                    "content": [{"type": "text", "text": f"[GLM Bridge Validation] {error_msg}"}]
                 }}
 
             if tool_name == "reason":
-                result = reason(args.get("problem", ""), args.get("max_steps"))
+                result = reason(args.get("problem", ""))
             elif tool_name == "verify":
                 result = verify(args.get("code", ""), args.get("context", ""))
             else:
@@ -227,4 +223,4 @@ class RLMServer:
 
 
 if __name__ == "__main__":
-    RLMServer().run()
+    GLMBridgeServer().run()

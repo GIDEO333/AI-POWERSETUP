@@ -25,14 +25,14 @@ check "~/.switchboard symlink"      "[ -L ~/.switchboard ]"
 # 5: MCP config exists
 check "mcp_config.json exists"      "[ -f ~/.gemini/antigravity/mcp_config.json ]"
 
-# 6: RLM server file exists
-check "rlm_mcp_server.py exists"    "[ -f $REPO_DIR/rlm-workspace/rlm_mcp_server.py ]"
+# 6: GLM Bridge server file exists
+check "glm_bridge_server.py exists" "[ -f $REPO_DIR/glm-bridge/glm_bridge_server.py ]"
 
 # 7: Python venv exists
-check "Python venv setup"           "[ -f $REPO_DIR/rlm-workspace/venv/bin/python3 ]"
+check "Python venv setup"           "[ -f $REPO_DIR/glm-bridge/venv/bin/python3 ]"
 
 # 8: litellm installed
-check "litellm installed in venv"   "$REPO_DIR/rlm-workspace/venv/bin/python3 -c 'import litellm' 2>/dev/null"
+check "litellm installed in venv"   "$REPO_DIR/glm-bridge/venv/bin/python3 -c 'import litellm' 2>/dev/null"
 
 # 9: Skills index exists and has 11 entries
 check "skills-index.json (11 skills)" "python3 -c \"import json; idx=json.load(open('$REPO_DIR/agent/skills/skills-index.json')); exit(0 if len(idx)==11 else 1)\""
@@ -41,7 +41,7 @@ check "skills-index.json (11 skills)" "python3 -c \"import json; idx=json.load(o
 check "11 SKILL.md files on disk"   "[ \$(find $REPO_DIR/agent/skills/skills -name 'SKILL.md' | wc -l | tr -d ' ') -eq 11 ]"
 
 # 11: Switchboard sub-MCPs registered
-check "Switchboard has rlm + exa"   "[ -f $REPO_DIR/switchboard/mcps/rlm/.mcp.json ] && [ -f $REPO_DIR/switchboard/mcps/exa/.mcp.json ]"
+check "Switchboard has glm-bridge + exa"   "[ -f $REPO_DIR/switchboard/mcps/glm-bridge/.mcp.json ] && [ -f $REPO_DIR/switchboard/mcps/exa/.mcp.json ]"
 
 echo ""
 echo "=== Result: $PASS passed, $FAIL failed (out of 11) ==="

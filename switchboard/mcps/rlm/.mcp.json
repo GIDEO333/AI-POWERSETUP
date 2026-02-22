@@ -1,9 +1,0 @@
-{
-  "name": "rlm",
-  "description": "rlm MCP",
-  "switchboardDescription": "Reasoning Layer Module",
-  "command": {
-    "cmd": "/Users/gideonthirtytres/Projects/AI-POWERSETUP/rlm-workspace/venv/bin/python3 /Users/gideonthirtytres/Projects/AI-POWERSETUP/rlm-workspace/rlm_mcp_server.py",
-    "args": []
-  }
-}
