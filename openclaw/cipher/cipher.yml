@@ -10,7 +10,7 @@ mcpServers:
       OPENAI_API_KEY: $ZAI_API_KEY
       OPENAI_API_BASE: https://api.z.ai/api/coding/paas/v4
       GLM_BRIDGE_MODEL: openai/glm-4.7
-      GLM_BRIDGE_TIMEOUT: "30"
+      GLM_BRIDGE_TIMEOUT: "90"
       GLM_FLASH_API_KEY: $ZAI_FLASH_API_KEY
       GLM_FLASH_API_BASE: https://api.z.ai/api/paas/v4
       GLM_FLASH_MODEL: glm-4.7-flash

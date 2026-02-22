@@ -60,9 +60,10 @@ def validate_args(tool_name, args):
 
 # ── LLM Calls ────────────────────────────────────────────────
 
-def llm_call(messages, max_tokens=2048, use_flash=False):
-    """Call LLM via LiteLLM. use_flash=True routes to free Flash model."""
+def llm_call(messages, max_tokens=2048, use_flash=False, retries=2):
+    """Call LLM via LiteLLM with retry on rate limit."""
     import litellm
+    import time as _time
 
     if use_flash and FLASH_API_KEY:
         key = FLASH_API_KEY
@@ -73,20 +74,26 @@ def llm_call(messages, max_tokens=2048, use_flash=False):
         base = API_BASE
         model = MODEL
 
-    try:
-        response = litellm.completion(
-            model=model,
-            messages=messages,
-            max_tokens=max_tokens,
-            api_key=key,
-            api_base=base,
-            extra_headers={"Accept-Language": "en-US,en"},
-            timeout=TIMEOUT,
-        )
-        return response.choices[0].message.content or ""
-    except Exception as e:
-        etype = type(e).__name__
-        return f"[GLM Bridge Error] {etype}: {str(e)[:200]}"
+    for attempt in range(retries + 1):
+        try:
+            response = litellm.completion(
+                model=model,
+                messages=messages,
+                max_tokens=max_tokens,
+                api_key=key,
+                api_base=base,
+                extra_headers={"Accept-Language": "en-US,en"},
+                timeout=TIMEOUT,
+            )
+            return response.choices[0].message.content or ""
+        except Exception as e:
+            estr = str(e).lower()
+            # Retry on rate limit (z.ai error 1302)
+            if ("rate limit" in estr or "1302" in estr) and attempt < retries:
+                _time.sleep(5 * (attempt + 1))  # 5s, 10s backoff
+                continue
+            etype = type(e).__name__
+            return f"[GLM Bridge Error] {etype}: {str(e)[:200]}"
 
 
 def flash_critique(original_problem, draft_answer):
