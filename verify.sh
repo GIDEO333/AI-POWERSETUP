@@ -1,5 +1,5 @@
 #!/bin/bash
-# FORGE Stack — Post-Bootstrap Verification (13 Audits)
+# FORGE Stack — Post-Bootstrap Verification (10 Audits)
 set -uo pipefail
 
 REPO_DIR="$(cd "$(dirname "$0")" && pwd)"
@@ -14,9 +14,9 @@ check() {
     fi
 }
 
-echo "=== FORGE Verification (13 Checks) ==="
+echo "=== FORGE Verification (10 Checks) ==="
 
-# 1-4: Symlinks exist and point to repo
+# 1-4: Symlinks exist
 check "~/.agent/scripts symlink"    "[ -L ~/.agent/scripts ]"
 check "~/.agent/skills symlink"     "[ -L ~/.agent/skills ]"
 check "~/.openclaw symlink"         "[ -L ~/.openclaw ]"
@@ -40,15 +40,6 @@ check "skills-index.json (11 skills)" "python3 -c \"import json; idx=json.load(o
 # 10: All 11 SKILL.md files present
 check "11 SKILL.md files on disk"   "[ \$(find $REPO_DIR/agent/skills/skills -name 'SKILL.md' | wc -l | tr -d ' ') -eq 11 ]"
 
-# 11: Switchboard sub-MCPs registered (glm-bridge + exa + forge-repl)
-check "Switchboard has 3 sub-MCPs"  "[ -f $REPO_DIR/switchboard/mcps/glm-bridge/.mcp.json ] && [ -f $REPO_DIR/switchboard/mcps/exa/.mcp.json ] && [ -f $REPO_DIR/switchboard/mcps/forge-repl/.mcp.json ]"
-
-# 12: forge-repl server exists
-check "forge_repl_server.py exists" "[ -f $REPO_DIR/forge-repl/forge_repl_server.py ]"
-
-# 13: forge-repl Python syntax valid
-check "forge-repl syntax OK"        "python3 -c \"import ast; ast.parse(open('$REPO_DIR/forge-repl/forge_repl_server.py').read())\""
-
 echo ""
-echo "=== Result: $PASS passed, $FAIL failed (out of 13) ==="
+echo "=== Result: $PASS passed, $FAIL failed (out of 10) ==="
 [ $FAIL -eq 0 ] && echo -e "${GREEN}🪨 ALL CHECKS PASSED${NC}" || echo -e "${RED}⚠️ SOME CHECKS FAILED${NC}"

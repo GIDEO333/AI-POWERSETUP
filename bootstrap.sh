@@ -133,7 +133,7 @@ cat > "$REPO_DIR/switchboard/mcps/glm-bridge/.mcp.json" << GLMEOF
 {
   "name": "glm-bridge",
   "description": "glm-bridge MCP",
-  "switchboardDescription": "GLM Bridge — Self-Refine + True RLM proxy to z.ai GLM-4.7",
+  "switchboardDescription": "GLM Bridge — Self-Refine LLM proxy to z.ai GLM-4.7",
   "command": {
     "cmd": "$REPO_DIR/glm-bridge/venv/bin/python3 $REPO_DIR/glm-bridge/glm_bridge_server.py",
     "args": [],
@@ -151,39 +151,7 @@ cat > "$REPO_DIR/switchboard/mcps/glm-bridge/.mcp.json" << GLMEOF
   }
 }
 GLMEOF
-ok "GLM Bridge sub-MCP path set (+ env vars)"
-
-# Update Exa .mcp.json
-EXA_KEY="${EXA_API_KEY:-}"
-cat > "$REPO_DIR/switchboard/mcps/exa/.mcp.json" << EXAEOF
-{
-  "name": "exa",
-  "description": "exa MCP",
-  "switchboardDescription": "Exa Web Search for internet awareness",
-  "command": {
-    "cmd": "npx -y exa-mcp-server",
-    "args": [],
-    "env": {
-      "EXA_API_KEY": "$EXA_KEY"
-    }
-  }
-}
-EXAEOF
-ok "Exa sub-MCP configured"
-
-# Generate forge-repl .mcp.json
-cat > "$REPO_DIR/switchboard/mcps/forge-repl/.mcp.json" << REPLEOF
-{
-  "name": "forge-repl",
-  "description": "forge-repl MCP",
-  "switchboardDescription": "Python REPL — sandboxed code execution for data processing",
-  "command": {
-    "cmd": "python3 $REPO_DIR/forge-repl/forge_repl_server.py",
-    "args": []
-  }
-}
-REPLEOF
-ok "forge-repl sub-MCP path set"
+ok "GLM Bridge sub-MCP path set"
 
 # ─── Step 6: Python virtual environment ─────────────────────
 log "Step 6: Setting up Python venv for GLM Bridge..."
