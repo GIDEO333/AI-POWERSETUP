@@ -9,7 +9,7 @@ Transport: stdio (JSON-RPC 2.0)
 Backend: LiteLLM → z.ai
 
 v3.2.0: Anti-hang fixes (num_retries=0, signal handler, fail-fast)
-v3.1.0: Cleanup — removed dead code (Peek Gate, deep_reason)
+v3.1.0: Cleanup — removed dead code (Peek Gate, redundant tools)
 v3.0.0: True RLM (removed — redundant with Gemini 1M context)
 v2.0.0: Self-Refine + Peek First Gate (removed — Flash over-thinks)
 v1.1.0: Argument validation, timeout guard
@@ -290,6 +290,7 @@ class GLMBridgeServer:
     ]
 
     def handle(self, req):
+        """Route JSON-RPC request to appropriate handler."""
         method = req.get("method", "")
         rid = req.get("id")
 
@@ -335,6 +336,7 @@ class GLMBridgeServer:
         }}
 
     def run(self):
+        """Main event loop — read JSON-RPC from stdin, write responses to stdout."""
         mode = "Self-Refine" if (SELF_REFINE and FLASH_API_KEY) else "Single-shot"
         sys.stderr.write(f"[GLM Bridge v3.1] Mode: {mode} | Model: {MODEL}\n")
         sys.stderr.flush()

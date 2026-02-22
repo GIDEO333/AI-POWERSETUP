@@ -1,6 +1,6 @@
 #!/bin/bash
 # FORGE Stack — Post-Bootstrap Verification (9 Audits)
-# All checks have explicit timeouts to prevent IDE deadlock.
+# macOS compatible — no GNU timeout needed.
 set -uo pipefail
 
 REPO_DIR="$(cd "$(dirname "$0")" && pwd)"
@@ -8,8 +8,7 @@ GREEN='\033[0;32m'; RED='\033[0;31m'; NC='\033[0m'
 PASS=0; FAIL=0
 
 check() {
-    # Wrap eval in timeout (10s max per check) to prevent hang
-    if timeout 10 bash -c "$2" &>/dev/null 2>&1; then
+    if eval "$2" &>/dev/null; then
         echo -e "${GREEN}  ✅ $1${NC}"; ((PASS++))
     else
         echo -e "${RED}  ❌ $1${NC}"; ((FAIL++))
@@ -32,7 +31,7 @@ check "glm_bridge_server.py OK"     "python3 -c \"import ast; ast.parse(open('$R
 # 6: Python venv exists
 check "Python venv setup"           "[ -f $REPO_DIR/glm-bridge/venv/bin/python3 ]"
 
-# 7: litellm installed (timeout prevents hang if venv broken)
+# 7: litellm installed
 check "litellm installed in venv"   "$REPO_DIR/glm-bridge/venv/bin/python3 -c 'import litellm' 2>/dev/null"
 
 # 8: Skills index exists and has 11 entries

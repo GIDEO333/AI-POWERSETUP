@@ -5,9 +5,8 @@ __pycache__/
 venv/
 .venv/
 
-# Environment
-# NOTE: .env is committed with placeholder values ("enter_your_apikey_here")
-# After cloning, replace placeholders with your real keys
+# Environment — NEVER commit real API keys
+.env
 
 # Generated at bootstrap time
 agent/skills/skills-index.json

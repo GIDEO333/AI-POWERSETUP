@@ -270,7 +270,7 @@ resp = s.handle({"jsonrpc":"2.0","id":1,"method":"initialize","params":{}})
 assert resp['id'] == 1
 assert 'protocolVersion' in resp['result']
 assert resp['result']['serverInfo']['name'] == 'glm-bridge'
-assert '3.1' in resp['result']['serverInfo']['version']
+assert '3.2' in resp['result']['serverInfo']['version']
 print('OK')
 """
     rc, out, err = _run_in_venv(code)
@@ -287,7 +287,7 @@ tools = resp['result']['tools']
 names = [t['name'] for t in tools]
 assert 'reason' in names, f'Missing reason, got: {names}'
 assert 'verify' in names, f'Missing verify, got: {names}'
-# These should NOT exist anymore (removed in v3.1)
+# These should NOT exist anymore (removed in v3.1+)
 assert 'deep_reason' not in names, 'deep_reason should be removed!'
 assert 'peek_first_gate' not in names, 'peek_first_gate should be removed!'
 assert len(tools) == 2, f'Expected 2 tools, got {len(tools)}'
@@ -583,11 +583,11 @@ def test_version_consistency():
     with open(GLM_PY) as f:
         source = f.read()
     # Check docstring version
-    if "v3.1" not in source[:200]:
-        return False, "Docstring doesn't mention v3.1"
-    if '"3.1' not in source:
+    if "v3.2" not in source[:300]:
+        return False, "Docstring doesn't mention v3.2"
+    if '"3.2' not in source:
         return False, "serverInfo version doesn't match"
-    return True, "v3.1 consistent"
+    return True, "v3.2 consistent"
 
 
 # ═══════════════════════════════════════════════════════════════
