@@ -118,11 +118,41 @@ Be concise. Do NOT rewrite the solution."""
         return None  # Flash failed, proceed without refinement
 
 
+# ── Peek First Gate ──────────────────────────────────────────
+
+def peek_first_gate(problem):
+    """Classify problem complexity via Flash (free). Returns 'SIMPLE' or 'COMPLEX'."""
+    if not FLASH_API_KEY:
+        return "COMPLEX"  # Default to full pipeline if Flash unavailable
+
+    gate_prompt = f"""Classify this coding problem as SIMPLE or COMPLEX.
+
+SIMPLE = one-liner fix, syntax error, simple question, config change, typo
+COMPLEX = multi-file debugging, architecture design, algorithm, security audit, refactoring
+
+Problem: {problem[:500]}
+
+Respond with ONLY one word: SIMPLE or COMPLEX"""
+
+    messages = [
+        {"role": "system", "content": "Classify coding problems. Reply with one word only."},
+        {"role": "user", "content": gate_prompt}
+    ]
+
+    try:
+        result = llm_call(messages, max_tokens=10, use_flash=True)
+        if result and "SIMPLE" in result.upper():
+            return "SIMPLE"
+        return "COMPLEX"
+    except Exception:
+        return "COMPLEX"  # Default safe
+
+
 # ── Tool Functions ───────────────────────────────────────────
 
-def reason(problem):
-    """Deep analysis with optional Self-Refine via Flash critique."""
-    system_prompt = """Anda adalah Reasoning Engine untuk coding agent.
+SIMPLE_PROMPT = """You are a coding assistant. Answer concisely and directly."""
+
+COMPLEX_PROMPT = """Anda adalah Reasoning Engine untuk coding agent.
 Tugas Anda: Analisis masalah secara SISTEMATIS:
 1. Pahami masalah — apa yang diminta?
 2. Identifikasi komponen yang terlibat
@@ -143,8 +173,24 @@ Format output:
 ## Kode
 (implementasi jika diminta)"""
 
+
+def reason(problem):
+    """Deep analysis with Peek First Gate + Self-Refine."""
+
+    # Step 0: Peek First Gate (Flash, free) — classify complexity
+    complexity = peek_first_gate(problem)
+
+    if complexity == "SIMPLE":
+        # Simple path: smaller prompt, fewer tokens, no refinement
+        messages = [
+            {"role": "system", "content": SIMPLE_PROMPT},
+            {"role": "user", "content": problem}
+        ]
+        return llm_call(messages, max_tokens=512)
+
+    # Complex path: full reasoning + Self-Refine
     messages = [
-        {"role": "system", "content": system_prompt},
+        {"role": "system", "content": COMPLEX_PROMPT},
         {"role": "user", "content": problem}
     ]
 
@@ -153,17 +199,17 @@ Format output:
         draft = llm_call(messages, max_tokens=2048)
 
         if not SELF_REFINE or not FLASH_API_KEY:
-            return draft  # No refinement, return as-is
+            return draft
 
         # Step 2: Critique via Flash (free, 0 quota)
         for i in range(MAX_REFINE):
             critique = flash_critique(problem, draft)
 
             if critique is None or "LGTM" in critique.upper():
-                break  # Flash says it's good, or Flash unavailable
+                break
 
-            # Step 3: Refine (premium, 1 more quota — only if real issues found)
-            refine_prompt = f"""Your previous answer had these issues identified by a reviewer:
+            # Step 3: Refine (premium, 1 more quota — only if issues found)
+            refine_prompt = f"""Your previous answer had these issues:
 
 {critique}
 
@@ -172,10 +218,10 @@ Original problem: {problem[:1000]}
 Your previous answer:
 {draft[:3000]}
 
-Please provide a CORRECTED and IMPROVED answer. Keep the same format."""
+Provide a CORRECTED and IMPROVED answer. Keep the same format."""
 
             messages_refine = [
-                {"role": "system", "content": system_prompt},
+                {"role": "system", "content": COMPLEX_PROMPT},
                 {"role": "user", "content": refine_prompt}
             ]
             draft = llm_call(messages_refine, max_tokens=2048)

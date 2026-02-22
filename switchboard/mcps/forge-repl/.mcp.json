@@ -1,0 +1,15 @@
+{
+    "mcpServers": {
+        "forge-repl": {
+            "type": "stdio",
+            "command": "python3",
+            "args": [
+                "${HOME}/Projects/AI-POWERSETUP/forge-repl/forge_repl_server.py"
+            ],
+            "env": {
+                "FORGE_REPL_TIMEOUT": "10",
+                "FORGE_REPL_MAX_OUTPUT": "8192"
+            }
+        }
+    }
+}
