@@ -135,14 +135,20 @@ def peek_first_gate(problem):
     if not FLASH_API_KEY:
         return "COMPLEX"  # Default to full pipeline if Flash unavailable
 
-    gate_prompt = f"""Classify this coding problem as SIMPLE or COMPLEX.
+    gate_prompt = f"""Classify this coding problem. Reply SIMPLE or COMPLEX only.
 
-SIMPLE = one-liner fix, syntax error, simple question, config change, typo
-COMPLEX = multi-file debugging, architecture design, algorithm, security audit, refactoring
+Examples:
+- "fix typo in variable name" → SIMPLE
+- "change color to red" → SIMPLE
+- "add a print statement" → SIMPLE
+- "what does this error mean" → SIMPLE
+- "debug race condition in microservice" → COMPLEX
+- "refactor authentication module" → COMPLEX
+- "analyze security vulnerabilities" → COMPLEX
+- "design database schema" → COMPLEX
 
 Problem: {problem[:500]}
-
-Respond with ONLY one word: SIMPLE or COMPLEX"""
+Answer:"""
 
     messages = [
         {"role": "system", "content": "Classify coding problems. Reply with one word only."},
