@@ -1,0 +1,11 @@
+{
+    "name": "fetch",
+    "description": "fetch MCP",
+    "switchboardDescription": "Web scraper and URL content transformer",
+    "command": {
+        "cmd": "/Users/gideonthirtytres/.local/bin/uvx",
+        "args": [
+            "mcp-server-fetch"
+        ]
+    }
+}

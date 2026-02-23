@@ -1,7 +1,7 @@
 {
   "name": "glm-bridge",
   "description": "glm-bridge MCP",
-  "switchboardDescription": "GLM Bridge — Single-shot LLM proxy to z.ai GLM-4.7",
+  "switchboardDescription": "GLM Bridge — Self-Refine LLM proxy to z.ai GLM-4.7",
   "command": {
     "cmd": "/Users/gideonthirtytres/Projects/AI-POWERSETUP/glm-bridge/venv/bin/python3 /Users/gideonthirtytres/Projects/AI-POWERSETUP/glm-bridge/glm_bridge_server.py",
     "args": []

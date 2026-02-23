@@ -1,0 +1,13 @@
+{
+    "name": "sqlite",
+    "description": "sqlite MCP",
+    "switchboardDescription": "Database access for Quant data (SQL execution)",
+    "command": {
+        "cmd": "/Users/gideonthirtytres/.local/bin/uvx",
+        "args": [
+            "mcp-server-sqlite",
+            "--db-path",
+            "/Users/gideonthirtytres/Projects/quant.db"
+        ]
+    }
+}

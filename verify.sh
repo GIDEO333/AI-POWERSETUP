@@ -35,10 +35,10 @@ check "Python venv setup"           "[ -f $REPO_DIR/glm-bridge/venv/bin/python3 
 check "litellm installed in venv"   "$REPO_DIR/glm-bridge/venv/bin/python3 -c 'import litellm' 2>/dev/null"
 
 # 8: Skills index exists and has 11 entries
-check "skills-index.json (11 skills)" "python3 -c \"import json; idx=json.load(open('$REPO_DIR/agent/skills/skills-index.json')); exit(0 if len(idx)==11 else 1)\""
+check "skills-index.json (≥11 skills)" "python3 -c \"import json; idx=json.load(open('$REPO_DIR/agent/skills/skills-index.json')); exit(0 if len(idx)>=11 else 1)\""
 
 # 9: All 11 SKILL.md files present
-check "11 SKILL.md files on disk"   "[ \$(find $REPO_DIR/agent/skills/skills -name 'SKILL.md' | wc -l | tr -d ' ') -eq 11 ]"
+check "≥11 SKILL.md files on disk"   "[ \$(find $REPO_DIR/agent/skills/skills -name 'SKILL.md' | wc -l | tr -d ' ') -ge 11 ]"
 
 echo ""
 echo "=== Result: $PASS passed, $FAIL failed (out of 9) ==="

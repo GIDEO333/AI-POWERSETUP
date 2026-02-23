@@ -1,0 +1,12 @@
+{
+    "name": "puppeteer",
+    "description": "puppeteer MCP",
+    "switchboardDescription": "Headless browser automation for JS-heavy sites",
+    "command": {
+        "cmd": "npx",
+        "args": [
+            "-y",
+            "@modelcontextprotocol/server-puppeteer"
+        ]
+    }
+}
