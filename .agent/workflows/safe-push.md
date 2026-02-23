@@ -1,5 +1,6 @@
 ---
 description: Security-gated git push — scan secrets and verify before pushing to GitHub
+value: ⭐⭐⭐
 ---
 // turbo-all
 1. Scan for leaked secrets in staged files:

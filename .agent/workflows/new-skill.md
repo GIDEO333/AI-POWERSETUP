@@ -1,5 +1,6 @@
 ---
 description: Create a new skill with proper SKILL.md format and rebuild the search index
+value: ⭐⭐⭐
 ---
 1. Ask user for: skill name (lowercase-dash) and one-line description
 2. Create skill directory and SKILL.md:

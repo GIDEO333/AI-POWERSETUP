@@ -77,6 +77,15 @@ SWITCH_TOOL = {
     }
 }
 
+SHOW_WORKFLOWS_TOOL = {
+    "name": "show_all_workflows",
+    "description": "Show all available workflows, their descriptions, and value ratings.",
+    "inputSchema": {
+        "type": "object",
+        "properties": {}
+    }
+}
+
 
 class Server:
     def __init__(self):
@@ -103,7 +112,7 @@ class Server:
             return None
         elif m == "tools/list":
             return {"jsonrpc": "2.0", "id": rid, "result": {
-                "tools": [SEARCH_TOOL, SWITCH_TOOL]
+                "tools": [SEARCH_TOOL, SWITCH_TOOL, SHOW_WORKFLOWS_TOOL]
             }}
         elif m == "tools/call":
             p = req.get("params", {})
@@ -152,6 +161,42 @@ class Server:
                     return {"jsonrpc": "2.0", "id": rid, "result": {"content": [{"type": "text", "text":
                         "❌ Provider must be 'jina' or 'local'."
                     }]}}
+
+            elif tool_name == "show_all_workflows":
+                workflow_dir = os.path.expanduser("~/.agent/workflows")
+                results = []
+                if os.path.exists(workflow_dir):
+                    for fname in os.listdir(workflow_dir):
+                        if fname.endswith(".md"):
+                            path = os.path.join(workflow_dir, fname)
+                            cmd = f"/{fname[:-3]}"
+                            desc = ""
+                            val = ""
+                            try:
+                                with open(path, "r", encoding="utf-8") as f:
+                                    in_frontmatter = False
+                                    for line in f:
+                                        sline = line.strip()
+                                        if sline == "---":
+                                            in_frontmatter = not in_frontmatter
+                                            continue
+                                        if in_frontmatter:
+                                            if sline.startswith("description:"):
+                                                desc = sline.partition("description:")[2].strip()
+                                            elif sline.startswith("value:"):
+                                                val = sline.partition("value:")[2].strip()
+                            except Exception:
+                                pass
+                            results.append({"command": cmd, "description": desc, "value": val})
+                
+                md = "### Available Workflows\n\n| Workflow Command | Value | Description |\n|---|---|---|\n"
+                for r in sorted(results, key=lambda x: x["command"]):
+                    md += f"| `{r['command']}` | {r['value']} | {r['description']} |\n"
+                
+                if not results:
+                    md = "No workflows found in ~/.agent/workflows/"
+                    
+                return {"jsonrpc": "2.0", "id": rid, "result": {"content": [{"type": "text", "text": md}]}}
 
         return {"jsonrpc": "2.0", "id": rid, "error": {"code": -32601, "message": f"Unknown: {m}"}}
 

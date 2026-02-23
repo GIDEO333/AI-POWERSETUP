@@ -74,6 +74,15 @@ fi
 ln -sf "$REPO_DIR/agent/skills" ~/.agent/skills
 ok "~/.agent/skills → repo"
 
+# ~/.agent/workflows → repo/.agent/workflows
+if [ -L ~/.agent/workflows ]; then rm ~/.agent/workflows; fi
+if [ -d ~/.agent/workflows ] && [ ! -L ~/.agent/workflows ]; then
+    mv ~/.agent/workflows ~/.agent/workflows.bak.$(date +%s)
+    warn "Backed up existing ~/.agent/workflows/"
+fi
+ln -sf "$REPO_DIR/.agent/workflows" ~/.agent/workflows
+ok "~/.agent/workflows → repo"
+
 # ~/.switchboard → repo/switchboard
 if [ -L ~/.switchboard ]; then rm ~/.switchboard; fi
 if [ -d ~/.switchboard ] && [ ! -L ~/.switchboard ]; then

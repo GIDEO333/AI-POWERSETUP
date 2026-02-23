@@ -1,5 +1,6 @@
 ---
 description: Deep analysis via GLM Bridge Self-Refine for complex bugs or architecture decisions
+value: ⭐⭐
 ---
 1. Ask user to describe the problem or architecture decision in detail
 2. Send to GLM Bridge for deep reasoning via switchboard → glm-bridge → reason(problem)
