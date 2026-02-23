@@ -24,8 +24,9 @@ echo ""
 
 # ─── Step 0: Verify macOS ────────────────────────────────────
 log "Step 0: Checking OS..."
-[[ "$(uname)" == "Darwin" ]] || fail "This bootstrap only works on macOS."
-ok "macOS detected"
+OS_NAME="$(uname)"
+[[ "$OS_NAME" == "Darwin" || "$OS_NAME" == "Linux" ]] || fail "This bootstrap requires macOS or Linux (WSL)."
+ok "$OS_NAME detected"
 
 # ─── Step 1: Check prerequisites ─────────────────────────────
 log "Step 1: Checking prerequisites..."
