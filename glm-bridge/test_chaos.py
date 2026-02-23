@@ -1,12 +1,13 @@
 #!/usr/bin/env python3
-"""LAYER 5: Chaos / Resilience Tests for RLM MCP Server."""
+"""LAYER 5: Chaos / Resilience Tests for GLM Bridge MCP Server."""
 import json
 import subprocess
 import sys
 import os
 
-VENV_PYTHON = os.path.expanduser("~/Projects/rlm-workspace/venv/bin/python3")
-SERVER_SCRIPT = os.path.expanduser("~/Projects/rlm-workspace/rlm_mcp_server.py")
+SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
+VENV_PYTHON = os.path.join(SCRIPT_DIR, "venv/bin/python3")
+SERVER_SCRIPT = os.path.join(SCRIPT_DIR, "glm_bridge_server.py")
 ZAI_KEY = os.environ.get("ZAI_API_KEY", "")
 
 

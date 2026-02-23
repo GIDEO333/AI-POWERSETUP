@@ -1,12 +1,13 @@
 #!/usr/bin/env python3
-"""Test suite for RLM MCP Server — verifies JSON-RPC protocol and tool calls."""
+"""Test suite for GLM Bridge MCP Server — verifies JSON-RPC protocol and tool calls."""
 import json
 import subprocess
 import sys
 import os
 
-VENV_PYTHON = os.path.expanduser("~/Projects/rlm-workspace/venv/bin/python3")
-SERVER_SCRIPT = os.path.expanduser("~/Projects/rlm-workspace/rlm_mcp_server.py")
+SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
+VENV_PYTHON = os.path.join(SCRIPT_DIR, "venv/bin/python3")
+SERVER_SCRIPT = os.path.join(SCRIPT_DIR, "glm_bridge_server.py")
 
 ENV = {
     **os.environ,
@@ -44,7 +45,7 @@ def test_initialize():
     assert len(resps) == 1
     r = resps[0]
     assert r["id"] == 1
-    assert r["result"]["serverInfo"]["name"] == "rlm-mcp-server"
+    assert r["result"]["serverInfo"]["name"] == "glm-bridge"
     assert r["result"]["protocolVersion"] == "2024-11-05"
     print("✅ PASS — Server initialized correctly")
     print(f"   Server: {r['result']['serverInfo']['name']} v{r['result']['serverInfo']['version']}")
@@ -145,7 +146,7 @@ def test_unknown_method():
 
 if __name__ == "__main__":
     print()
-    print("🔬 RLM MCP Server — Test Suite")
+    print("🔬 GLM Bridge MCP Server — Test Suite")
     print("=" * 60)
     print()
 
