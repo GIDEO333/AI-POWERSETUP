@@ -25,6 +25,12 @@ SKILL_ALIASES = {
     "api-design":           ["buat api", "rest api", "endpoint baru", "swagger", "openapi"],
     "code-review":          ["review kode", "cek kode", "sebelum merge", "pr review"],
     "normalize-input":      ["typo", "perbaiki input", "format query", "normalisasi"],
+    "skill-creator":        ["buat skill baru", "tambah skill", "bikin skill", "buat sop otomatis",
+                             "tambah kemampuan agent", "buat skill untuk", "new skill", "generate skill",
+                             "create skill", "bikin kemampuan baru", "saya mau buat skill"],
+    "forge-to-claude":      ["convert skill to claude code", "claude code version", "optimize skill for claude",
+                             "buat versi claude code", "konversi skill", "jadikan claude compatible",
+                             "export skill claude", "skill claude code optimizer", "claude code versi dari"],
 }
 
 
