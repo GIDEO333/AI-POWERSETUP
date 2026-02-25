@@ -31,6 +31,9 @@ SKILL_ALIASES = {
     "forge-to-claude":      ["convert skill to claude code", "claude code version", "optimize skill for claude",
                              "buat versi claude code", "konversi skill", "jadikan claude compatible",
                              "export skill claude", "skill claude code optimizer", "claude code versi dari"],
+    "brainstorm-refiner":   ["verifikasi draft ini", "olah hasil perplexity", "cek halusinasi",
+                             "refine brainstorming", "verify ai output", "filter fakta dari dump",
+                             "buat spek dari draft ai", "validasi tutorial ini", "analisis prompt"],
 }
 
 

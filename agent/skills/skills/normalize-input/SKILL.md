@@ -15,6 +15,22 @@ Pre-processing skill — the FIRST step before any other skill is invoked.
 
 ## Process (execute in order)
 
+### Step 0 — Deteksi Konten AI-Generated (PRIORITY CHECK)
+
+**Sebelum langkah lain**, cek apakah input mengandung salah satu penanda ini:
+- Logo/header Perplexity: `perplexity.ai`, `pplx-full-logo`, `<img src="...perplexity..."`
+- Footnote format Perplexity: `[^1_1]`, `[^2_3]`, pola `[^N_N]`
+- Header section ChatGPT/Claude/AI: `# Pertanyaan kamu masuk ke...`, dokumen markdown panjang dari AI lain
+- User menempel konten panjang yang jelas dari AI lain (>500 kata dengan struktur numbered sections)
+
+**Jika terdeteksi:**
+→ **STOP. Jangan proses lebih lanjut.**
+→ Declare: *"Mendeteksi konten dari AI eksternal — menjalankan `brainstorm-refiner` skill untuk memverifikasi fakta dan syntax sebelum melanjutkan."*
+→ Invoke `brainstorm-refiner` skill sebagai prioritas pertama.
+
+**Jika tidak terdeteksi:**
+→ Lanjutkan ke Step 1.
+
 ### Step 1 — Typo & Grammar Fix
 
 Correct all spelling errors silently. Do NOT mention corrections unless they change meaning.
