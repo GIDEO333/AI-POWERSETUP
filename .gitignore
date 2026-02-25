@@ -8,8 +8,8 @@ venv/
 # Environment — NEVER commit real API keys
 .env
 
-# Generated at bootstrap time
-agent/skills/skills-index.json
+# Generated at bootstrap time (now tracked for portability)
+# agent/skills/skills-index.json
 
 # OS
 .DS_Store
