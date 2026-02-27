@@ -43,6 +43,10 @@ Selain master log di atas, jika sesi ini memiliki fokus Domain spesifik, kamu ju
 
 Gunakan bash command `echo` atau `cat` sama seperti di atas.
 
+## Auto-Update Brain Map (CRITICAL)
+Sistem ini memiliki *Master Blueprint* di `~/.agent/memory/topics/antigravity-brain-map.md`. 
+Jika di sesi ini kamu membangun sistem baru, infrastruktur baru, atau *skill* baru yang mengubah/menambah arsitektur utama Antigravity, kamu **WAJIB** membaca file `antigravity-brain-map.md` tersebut, lalu meng-overwrite (menimpa) isinya dengan versi yang sudah ditambahkan sistem baru tersebut. Jangan hapus isi lamanya, cukup tambahkan poin baru ke kategori yang relevan.
+
 ## Error Handling
 - Jika master folder `~/.agent/memory/` belum ada, jalankan `mkdir -p ~/.agent/memory/topics` sebelum append.
 - Jika ringkasanmu melebihi 10 baris, PAKSA kompres jadi lebih pendek sebelum di-append.
