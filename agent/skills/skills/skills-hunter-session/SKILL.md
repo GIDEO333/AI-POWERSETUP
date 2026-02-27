@@ -91,6 +91,41 @@ For rejected/unconfirmed → queue to `~/.agent/memory/topics/skills-built.md`:
 
 ---
 
+### Step 6 — Universal Skill Log ⚠️ ALWAYS RUN (regardless of user choice)
+
+**After every session scan — no exceptions — append ALL detected candidates to the acquisition log.**
+This runs even if the user says "skip all" or "none". It is non-destructive and never creates skill files.
+
+File: `~/.agent/memory/topics/skill-acquisition-log.md`
+
+Format for each entry:
+```markdown
+| YYYY-MM-DD | `skill-name` | X/5 | installed / queued / rejected | one-line description | trigger phrase |
+```
+
+If the file doesn't exist yet, create it with this header first:
+```markdown
+# Skill Acquisition Log
+> All skills ever detected by skills-hunter, regardless of install status.
+> Query this to see what skills you could still acquire.
+
+| Date | Skill Name | Score | Status | Description | Trigger |
+|------|-----------|-------|--------|-------------|---------|
+```
+
+**Status values:**
+- `installed` — SKILL.md was created this session
+- `queued` — saved to skills-built.md candidate queue
+- `rejected` — user explicitly declined
+- `duplicate` — already exists as an active skill
+
+**Trigger for querying this log:**
+User says: *"skill apa yang bisa saya acquire?"*, *"list semua skill kandidat"*,
+*"show skill backlog"*, *"skill yang belum dibuat apa aja?"*
+→ Read `skill-acquisition-log.md` and present a filtered table (exclude `installed` and `duplicate` by default, unless user asks for full list).
+
+---
+
 ## Naming Convention
 
 ```
