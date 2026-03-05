@@ -6,6 +6,7 @@ description: >
   runs `npm run auth`, waits for the QR code, and guides the user. It also
   handles the common QR code timeout or stream (515) errors.
   Trigger: "login nanoclaw", "auth whatsapp", "scan qr nanoclaw", "konek whatsapp nanoclaw".
+category: App-Specific
 ---
 
 # NanoClaw Login Helper

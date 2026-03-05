@@ -1,6 +1,7 @@
 ---
 name: create-project
 description: Scaffold a new project from scratch with proper structure, git, and dependencies. Use when the user says "I want to start a new project" or "create a new app".
+category: Dev
 ---
 
 # Create Project

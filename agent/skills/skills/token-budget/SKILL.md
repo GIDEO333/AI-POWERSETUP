@@ -1,6 +1,7 @@
 ---
 name: token-budget
 description: Hitung dan analisis token overhead dari seluruh stack (MCP, skills, workflows). Bandingkan efisiensi dengan dan tanpa aggregasi. Token budget, context window usage, MCP overhead, context efficiency, cost analysis.
+category: Meta
 ---
 
 # Token Budget — Stack Efficiency Analyzer

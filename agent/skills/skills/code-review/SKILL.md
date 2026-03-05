@@ -1,6 +1,7 @@
 ---
 name: code-review
 description: Review code for correctness, security, performance, and style. Use when the user asks to review a PR, check code quality before merge, cek kualitas sebelum merge, or review a function or module.
+category: QA
 ---
 
 # Code Review

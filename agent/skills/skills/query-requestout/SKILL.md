@@ -7,6 +7,7 @@ description: >
   Planned: Gemini, ChatGPT.
   Trigger: "buatkan query untuk perplexity", "draft query ke perplexity",
   "query requestout", "minta ke perplexity".
+category: Research
 ---
 
 # Query-Requestout Skill

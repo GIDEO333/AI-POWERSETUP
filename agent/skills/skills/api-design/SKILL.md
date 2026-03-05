@@ -1,6 +1,7 @@
 ---
 name: api-design
 description: Design clean, consistent, and scalable REST APIs or GraphQL schemas. Use when the user is creating a new API endpoint or designing a backend service.
+category: Dev
 ---
 
 # API Design

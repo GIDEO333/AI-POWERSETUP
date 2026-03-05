@@ -1,6 +1,7 @@
 ---
 name: git-workflow
 description: Handle Git operations including branching, committing, merging, rebasing, and resolving conflicts. Use when the user needs help with any Git or GitHub task.
+category: Ops
 ---
 
 # Git Workflow

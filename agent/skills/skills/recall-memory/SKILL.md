@@ -1,6 +1,7 @@
 ---
 name: recall-memory
 description: Proactively reads and retrieves the past sessions' architectural decisions, tasks, and lessons learned from the agent's declarative memory log (~/.agent/memory). Invoked when the user says "recall", "load memory", "baca memori", "ingat sesi", "apa yang kamu ingat".
+category: Memory
 ---
 
 # Recall Memory: The Declarative History Reader

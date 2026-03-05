@@ -1,6 +1,7 @@
 ---
 name: normalize-input
 description: Pre-process user input before any other skill. Fix typos, translate to English, clarify intent. Use automatically on every first message from user, especially when input contains typos, abbreviations, mixed Indonesian-English, or unclear intent.
+category: Format
 ---
 
 # Normalize Input

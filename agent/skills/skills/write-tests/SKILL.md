@@ -1,6 +1,7 @@
 ---
 name: write-tests
 description: Write unit tests, integration tests, and end-to-end tests for any codebase. Use when the user asks to add tests or when fixing a bug (write a test to prevent regression).
+category: Dev
 ---
 
 # Write Tests

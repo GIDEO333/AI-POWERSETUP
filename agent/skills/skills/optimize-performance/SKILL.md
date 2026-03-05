@@ -1,6 +1,7 @@
 ---
 name: optimize-performance
 description: Identify and fix performance bottlenecks including slow API response times, high latency, sluggish code, aplikasi lemot, lambat, database slowness, high CPU/memory usage, or timeouts. Use when something is slow or needs speed optimization.
+category: Debug
 ---
 
 # Optimize Performance

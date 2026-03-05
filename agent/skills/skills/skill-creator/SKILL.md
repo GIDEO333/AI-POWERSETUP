@@ -5,6 +5,7 @@ description: Generate a new Agent Skill SKILL.md following the FORGE quality sta
   "buat skill yang bisa", "create new skill", "generate skill", "I need a skill that",
   "tambah kemampuan agent", "buat SOP otomatis", "new skill", "saya mau buat skill".
   Outputs cross-compatible SKILL.md valid for Antigravity and Claude Code.
+category: Meta
 ---
 
 # Skill Creator — FORGE Quality Standard Generator

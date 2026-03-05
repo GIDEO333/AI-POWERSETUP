@@ -1,6 +1,7 @@
 ---
 name: refactor-code
 description: Improve the structure, readability, and maintainability of existing code without changing its behavior. Use when code is messy, berantakan, duplicated, hard to read, susah dibaca, or too complex.
+category: Dev
 ---
 
 # Refactor Code

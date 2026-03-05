@@ -86,6 +86,15 @@ SHOW_WORKFLOWS_TOOL = {
     }
 }
 
+LIST_SKILLS_TOOL = {
+    "name": "list_skills",
+    "description": "List all 39+ agent skills. Categories: Dev (api-design, create-project, database-query, refactor-code, write-tests), Debug (debug-code, optimize-performance), Ops (docker-security-audit, docker-setup, git-workflow, headless-cli-wrapper, powersetup-healthcheck, safe-push, safe-rollback, sandbox-executor-setup), AI-Orchestration (agent-constraint-schema, claude-agent-teams, multi-agent-orchestrator), QA (ai-system-evaluator, code-review, llm-eval-arena, project-audit, query-scorecard, source-truth-check), Memory (recall-memory, session-export, session-memory), Format (brainstorm-refiner, normalize-input), Research (deep-research, query-requestout), Meta (forge-to-claude, gemini-rules-toggle, meta-levelup, skill-creator, skills-hunter-session, token-budget, workflow-guide), App-Specific (nanoclaw-login). Call for full catalog.",
+    "inputSchema": {
+        "type": "object",
+        "properties": {}
+    }
+}
+
 
 class Server:
     def __init__(self):
@@ -112,7 +121,7 @@ class Server:
             return None
         elif m == "tools/list":
             return {"jsonrpc": "2.0", "id": rid, "result": {
-                "tools": [SEARCH_TOOL, SWITCH_TOOL, SHOW_WORKFLOWS_TOOL]
+                "tools": [SEARCH_TOOL, SWITCH_TOOL, SHOW_WORKFLOWS_TOOL, LIST_SKILLS_TOOL]
             }}
         elif m == "tools/call":
             p = req.get("params", {})
@@ -197,6 +206,22 @@ class Server:
                     md = "No workflows found in ~/.agent/workflows/"
                     
                 return {"jsonrpc": "2.0", "id": rid, "result": {"content": [{"type": "text", "text": md}]}}
+
+            elif tool_name == "list_skills":
+                if not self.index:
+                    return {"jsonrpc": "2.0", "id": rid, "result": {"content": [{"type": "text", "text":
+                        "No skills indexed. Run build-skills-index.py first."
+                    }]}}
+                lines = [f"📦 {len(self.index)} Skills Available:"]
+                for doc in sorted(self.index, key=lambda x: x.get("name", "")):
+                    name = doc.get("name", doc.get("id", "unknown"))
+                    desc = doc.get("description", "").strip()
+                    # Truncate to first sentence or 80 chars for token efficiency
+                    if len(desc) > 80:
+                        desc = desc[:77] + "..."
+                    lines.append(f"- {name}: {desc}")
+                lines.append("\nUse `search_skills(query)` for semantic match or `view_file` on skill path for full instructions.")
+                return {"jsonrpc": "2.0", "id": rid, "result": {"content": [{"type": "text", "text": "\n".join(lines)}]}}
 
         return {"jsonrpc": "2.0", "id": rid, "error": {"code": -32601, "message": f"Unknown: {m}"}}
 

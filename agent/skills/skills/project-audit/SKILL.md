@@ -1,6 +1,7 @@
 ---
 name: project-audit
 description: Generate comprehensive project architecture audit, deep-dive documentation, vulnerability scan, and scale-up analysis. Buat laporan lengkap arsitektur project untuk di-review oleh LLM lain, security audit, atau planning scale-up. Audit keamanan, architecture review, system documentation.
+category: QA
 ---
 
 # Project Audit — Deep Dive Generator

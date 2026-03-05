@@ -7,6 +7,7 @@ description: >
   before it's lost.
   Trigger: "skills-hunter-session", "cari skill baru dari sesi ini",
   "ada skill yang bisa dibuat?", "skill extraction".
+category: Meta
 ---
 
 # Skills Hunter — Session Edition

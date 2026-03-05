@@ -7,6 +7,7 @@ description: >
   trade-offs. Use before deploying any Docker-based project.
   Trigger: "docker security audit", "audit keamanan container",
   "docker security gaps", "cek keamanan docker project".
+category: Ops
 ---
 
 # Docker Security Audit

@@ -1,0 +1,102 @@
+[
+    {
+        "id": "gemini-rules",
+        "name": "GEMINI.md Global Rules",
+        "type": "config",
+        "check": "file_exists",
+        "path": "~/.gemini/GEMINI.md",
+        "added": "2026-02-28",
+        "notes": "7 rules including Architect Orchestrator Mode"
+    },
+    {
+        "id": "triple-agent-orchestrator",
+        "name": "Triple Agent Orchestrator Repo",
+        "type": "git_repo",
+        "check": "git_clean",
+        "path": "~/Projects/triple-agent-orchestrator",
+        "added": "2026-02-28",
+        "notes": "Source of truth for agent configs and sprint script"
+    },
+    {
+        "id": "ai-workflow-templates",
+        "name": "AI Workflow Templates (Symlinks)",
+        "type": "symlink_dir",
+        "check": "symlinks_intact",
+        "path": "~/Projects/AI_Workflow_Templates",
+        "added": "2026-02-28",
+        "notes": "Symlinks to triple-agent-orchestrator/src/templates/"
+    },
+    {
+        "id": "agent-sprint",
+        "name": "agent_sprint.sh v2.1",
+        "type": "script",
+        "check": "bash_syntax",
+        "path": "~/Projects/triple-agent-orchestrator/src/templates/agent_sprint.sh",
+        "added": "2026-02-28",
+        "notes": "Triple Agent pipeline orchestrator"
+    },
+    {
+        "id": "worker-prompt",
+        "name": "Claude Worker Prompt",
+        "type": "prompt",
+        "check": "xml_tag",
+        "path": "~/Projects/triple-agent-orchestrator/src/templates/claude_glm47_worker_prompt.md",
+        "added": "2026-02-28",
+        "notes": "System prompt for Worker agent"
+    },
+    {
+        "id": "qa-prompt",
+        "name": "Claude QA Prompt",
+        "type": "prompt",
+        "check": "xml_tag",
+        "path": "~/Projects/triple-agent-orchestrator/src/templates/claude_glm47_qa_prompt.md",
+        "added": "2026-02-28",
+        "notes": "System prompt for QA agent"
+    },
+    {
+        "id": "claude-cli",
+        "name": "Claude Code CLI",
+        "type": "cli_tool",
+        "check": "command_exists",
+        "command": "claude",
+        "added": "2026-02-28",
+        "notes": "Anthropic Claude Code terminal agent"
+    },
+    {
+        "id": "workflows",
+        "name": "Anti-gravity Workflows",
+        "type": "symlink_dir",
+        "check": "dir_min_files",
+        "path": "~/.agent/workflows",
+        "min_files": 2,
+        "added": "2026-02-28",
+        "notes": "Slash command workflows for Antigravity IDE"
+    },
+    {
+        "id": "skills-index",
+        "name": "Skills Search Index",
+        "type": "index",
+        "check": "json_count",
+        "path": "~/.agent/skills/skills-index.json",
+        "added": "2026-02-28",
+        "notes": "Semantic search index for agent skills"
+    },
+    {
+        "id": "glm-bridge",
+        "name": "GLM-4.7 Bridge Server",
+        "type": "service",
+        "check": "file_exists",
+        "path": "~/Projects/AI-POWERSETUP/glm-bridge/glm_bridge_server.py",
+        "added": "2026-02-28",
+        "notes": "Self-Refine LLM proxy to z.ai GLM-4.7"
+    },
+    {
+        "id": "switchboard",
+        "name": "Switchboard MCP",
+        "type": "service",
+        "check": "dir_exists",
+        "path": "~/Projects/AI-POWERSETUP/switchboard",
+        "added": "2026-02-28",
+        "notes": "MCP server hub for external tools"
+    }
+]

@@ -7,6 +7,7 @@ description: Conduct systematic deep-dive research on any technology by prioriti
   "analisis teknologi", "research this", "deep research", "pahami arsitektur",
   "cari tau tentang", "investigate", "study documentation".
   Technology research, architecture analysis, security audit, source code analysis.
+category: Research
 ---
 
 # Deep Research Skill

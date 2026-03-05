@@ -1,6 +1,7 @@
 ---
 name: debug-code
 description: Systematically debug errors, exceptions, and unexpected behavior in any programming language. Use when the user reports a bug, error message, or unexpected output.
+category: Debug
 ---
 
 # Debug Code

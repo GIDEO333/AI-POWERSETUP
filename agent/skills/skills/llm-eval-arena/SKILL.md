@@ -5,6 +5,7 @@ description: Evaluate and rank multiple mental models or context engineering str
   "eval arena", "llm eval arena", "test context strategy", "ranking prompt strategy",
   "uji mental model", "mana yang lebih bagus", "compare reasoning strategy",
   "jalankan eval", "scoring mental model", "context engineering benchmark".
+category: QA
 ---
 
 # LLM Eval Arena — Agent-Native Mental Model Benchmark

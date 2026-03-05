@@ -3,6 +3,7 @@ name: session-memory
 description: Saves the decisions, insights, and completed tasks from the active chat session into the persistent declarative memory log (~/.agent/memory). 
   Invoked when user says "simpan sesi ini", "record session", "save memory",
   "catat keputusan hari ini", "ingat sesi kita", "buat ringkasan memori".
+category: Memory
 ---
 
 # Session Memory: The Declarative History Keeper

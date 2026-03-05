@@ -7,6 +7,7 @@ description: >
   machine can reach 100% working state with minimum effort, (3) git
   workflow — clean branch, conventional commit, push.
   Trigger: "safe push", "push ke github", "siap push", "push project baru".
+category: Ops
 ---
 
 # Safe Push Skill

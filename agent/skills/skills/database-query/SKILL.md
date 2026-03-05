@@ -1,6 +1,7 @@
 ---
 name: database-query
 description: Write, optimize, and debug SQL queries and ORM calls. Use when the user needs to fetch data, design schema, or fix slow queries.
+category: Dev
 ---
 
 # Database Query

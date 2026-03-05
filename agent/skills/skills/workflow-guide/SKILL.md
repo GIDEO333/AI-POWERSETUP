@@ -1,6 +1,7 @@
 ---
 name: workflow-guide
 description: Show all available workflows, their value level, usage, and slash commands. Daftar workflows, panduan workflow, cara pakai workflow, fitur apa saja yang tersedia.
+category: Meta
 ---
 
 # Workflow Guide — Available Slash Commands

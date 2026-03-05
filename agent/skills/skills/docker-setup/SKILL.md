@@ -1,6 +1,7 @@
 ---
 name: docker-setup
 description: Create Dockerfiles and docker-compose files to containerize applications. Use when the user wants to run their project in Docker or prepare it for deployment.
+category: Ops
 ---
 
 # Docker Setup

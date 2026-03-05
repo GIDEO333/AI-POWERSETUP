@@ -5,6 +5,7 @@ description: Convert existing FORGE skills to Claude Code optimized versions wit
   "buat versi claude code dari skill", "konversi skill ke claude code", "claude code version",
   "jadikan skill ini claude code compatible", "export skill for claude".
   Creates a NEW file alongside the original — never overwrites the FORGE SKILL.md.
+category: Meta
 ---
 
 # FORGE → Claude Code Skill Converter

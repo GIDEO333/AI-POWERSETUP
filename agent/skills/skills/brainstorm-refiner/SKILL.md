@@ -4,6 +4,7 @@ description: Process raw AI-generated brainstorming or tutorials (e.g., from Per
   Invoked when user says "verifikasi draft ini", "olah hasil perplexity", 
   "cek halusinasi", "refine brainstorming", "verify ai output", 
   "filter fakta dari dump", "buat spek dari draft AI", "validasi tutorial ini".
+category: Format
 ---
 
 # Brainstorm Refiner & Fact Checker
