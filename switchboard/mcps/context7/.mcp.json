@@ -1,0 +1,12 @@
+{
+    "name": "context7",
+    "description": "Context7 MCP Server (Up-to-date documentation and code context)",
+    "switchboardDescription": "Provides live, version-specific documentation to avoid AI hallucinations",
+    "command": {
+        "cmd": "/opt/homebrew/bin/npx",
+        "args": [
+            "-y",
+            "@upstash/context7-mcp"
+        ]
+    }
+}
