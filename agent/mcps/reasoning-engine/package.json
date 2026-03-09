@@ -1,0 +1,23 @@
+{
+  "name": "reasoning-engine",
+  "version": "1.0.0",
+  "description": "Adversarial reasoning MCP: thesis→antithesis→synthesis→stresstest with server-side scoring",
+  "type": "module",
+  "main": "dist/index.js",
+  "bin": {
+    "dialectic-engine": "dist/index.js"
+  },
+  "scripts": {
+    "build": "tsc",
+    "start": "node dist/index.js",
+    "dev": "tsc --watch"
+  },
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.12.1",
+    "zod": "^3.24.4"
+  },
+  "devDependencies": {
+    "typescript": "^5.8.2",
+    "@types/node": "^22.15.3"
+  }
+}
