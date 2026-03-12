@@ -132,10 +132,20 @@ const server = new McpServer({
 
 server.tool(
   "search_code",
-  "Search code across millions of open-source repositories on Sourcegraph. Use specific queries with repo filters for best results. Returns max 5 results.",
+  "Search code across millions of open-source repositories on Sourcegraph. Use this to find library implementation examples, debug trace codes, or find specific design patterns.",
   {
     query: z.string().max(2000).describe(
-      "Sourcegraph search query. MUST be specific. Good: 'useEffect cleanup WebSocket repo:vercel/next.js'. Bad: 'useEffect'."
+      `Sourcegraph search query syntax. 
+      CRITICAL INSTRUCTIONS FOR AI AGENTS:
+      1. MUST restrict search scope using 'repo:' to prevent timeouts.
+      2. For exact GitHub repos, use strict regex markers: 'repo:^github\\.com/owner/repository$'
+      3. For multiple repos: 'repo:^github\\.com/(facebook/react|vercel/next\\.js)$'
+      4. Filter file types via 'lang:' (e.g., 'lang:typescript') or 'file:' (e.g., 'file:\\.test\\.tsx$')
+      5. Boolean operations: Use 'AND', 'OR', 'NOT' in caps.
+      Examples:
+      - 'repo:^github\\.com/vercel/next\\.js$ "useEffect" lang:typescript'
+      - 'repo:^github\\.com/openai/openai-node$ file:package\\.json "dependencies"'
+      - 'repo:^github\\.com/withastro/astro$ -file:\\.md$'`
     ),
   },
   async ({ query }) => {
