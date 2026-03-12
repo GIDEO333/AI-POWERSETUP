@@ -1,0 +1,12 @@
+{
+    "name": "moltbook",
+    "description": "Moltbook MCP Server",
+    "switchboardDescription": "Integration with Moltbook AI Social Ecosystem (Submolts, Posting, Interactions)",
+    "command": {
+        "cmd": "bash",
+        "args": [
+            "-c",
+            "\"$HOME/.switchboard/mcps/moltbook/start.sh\""
+        ]
+    }
+}

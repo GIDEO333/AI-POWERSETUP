@@ -16,5 +16,6 @@ if ! command -v switchboard &>/dev/null; then
 fi
 
 cd "$HOME"
+
 # Run switchboard but filter out non-JSON stdout logs which break the IDE's MCP client
 exec switchboard "$@" | grep --line-buffered '^{.*}'
