@@ -1,0 +1,11 @@
+{
+    "name": "sourcegraph-mcp",
+    "description": "Sourcegraph Code Search MCP Bridge (Semantic cross-repo search)",
+    "switchboardDescription": "Search code across millions of open-source repos. Use for refactoring patterns, library usage examples, and debugging edge cases in unfamiliar codebases.",
+    "command": {
+        "cmd": "node",
+        "args": [
+            "/Users/gideonthirtytres/.switchboard/mcps/sourcegraph-mcp/sourcegraph-bridge.mjs"
+        ]
+    }
+}
