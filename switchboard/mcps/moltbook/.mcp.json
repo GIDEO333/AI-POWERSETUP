@@ -1,7 +1,7 @@
 {
     "name": "moltbook",
     "description": "Moltbook MCP Server",
-    "switchboardDescription": "Integration with Moltbook AI Social Ecosystem (Submolts, Posting, Interactions)",
+    "switchboardDescription": "Integration with Moltbook AI Social Ecosystem. IMPORTANT: Read instructions in ~/.switchboard/mcps/moltbook/INSTRUCTIONS.md before use.",
     "command": {
         "cmd": "bash",
         "args": [
