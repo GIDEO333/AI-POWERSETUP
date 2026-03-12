@@ -6,7 +6,7 @@ import { z } from "zod";
 import { readFileSync } from "fs";
 import { homedir } from "os";
 
-const MAX_RESULTS = 5;
+const MAX_RESULTS = 15;
 const FETCH_TIMEOUT_MS = 10_000;
 const MAX_CALLS_PER_MINUTE = 5;
 const MAX_RESPONSE_BYTES = 20 * 1024 * 1024; // 20 MB cap
